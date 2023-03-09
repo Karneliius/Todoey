@@ -16,6 +16,7 @@ final class ItemViewController: UIViewController {
     private let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
     private var models = [TodoeyItem]()
+    private  var selectedSection: TodoeySection?
     
     private lazy var searchBar: UISearchBar = {
         let searchbar = UISearchBar()
@@ -26,19 +27,18 @@ final class ItemViewController: UIViewController {
     
     private lazy var itemTableView: UITableView = {
         let tableView = UITableView()
-        tableView.register(SectionTableViewCell.self, forCellReuseIdentifier: SectionTableViewCell.IDENTIFIER)
+        tableView.register(TodoeyTableViewCell.self, forCellReuseIdentifier: TodoeyTableViewCell.IDENTIFIER)
         tableView.separatorStyle = .none
         return tableView
     }()
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         configureNavBar()
         view.backgroundColor = .systemBackground
         
-        DataManager.shared.delegate = self
-        DataManager.shared.fetchItems()
+        ItemManager.shared.delegate = self
+        ItemManager.shared.fetchItems(section: selectedSection!)
         
         itemTableView.dataSource = self
         itemTableView.delegate = self
@@ -47,13 +47,17 @@ final class ItemViewController: UIViewController {
         setupViews()
         setupConstraints()
     }
+    
+    func configure(with section: TodoeySection) {
+        selectedSection = section
+    }
+     
 }
-
 //MARK: - Private controller methods
 
 private extension ItemViewController {
     func configureNavBar(){
-        navigationItem.title = "Todoey"
+        navigationItem.title = selectedSection?.name
         let add = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addButtonPressed))
         navigationItem.rightBarButtonItem = add
         navigationController?.navigationBar.tintColor = .label
@@ -65,7 +69,7 @@ private extension ItemViewController {
         alert.addTextField()
         alert.addAction(UIAlertAction(title: "Submit", style: .cancel, handler: { _ in guard let field = alert.textFields?.first, let text = field.text, !text.isEmpty else { return }
             
-            DataManager.shared.createItem(with: text)
+            ItemManager.shared.createItem(with: text)
         }))
         
         present(alert, animated: true)
@@ -74,20 +78,18 @@ private extension ItemViewController {
 
 //MARK: - Data manager delegate methods
 
-extension ItemViewController: DataManagerDelegate{
+extension ItemViewController: ItemManagerDelegate{
     
-    func didUpdateModelList(with models: [TodoeyItem]) {
+    func didUpdateItems(with models: [TodoeyItem]) {
         self.models = models
         DispatchQueue.main.async {
             self.itemTableView.reloadData()
         }
     }
     
-    func didFailWithError(error: Error) {
+    func didFail(with error: Error) {
         print ("Following error appeared: ", error)
     }
-    
-    
 }
 
 //MARK: - Tableview data source methods
@@ -99,11 +101,9 @@ extension ItemViewController: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: SectionTableViewCell.IDENTIFIER, for: indexPath) as! SectionTableViewCell
+        let cell = tableView.dequeueReusableCell(withIdentifier: TodoeyTableViewCell.IDENTIFIER, for: indexPath) as! TodoeyTableViewCell
         cell.selectionStyle = .none
         cell.configure(with: models[indexPath.row].name!)
-        let num = CGFloat.random(in: 120...255)
-        cell.backgroundColor = UIColor(red: num/255, green: num/255, blue: num/255, alpha: 1)
         return cell
     }
 }
@@ -125,13 +125,13 @@ extension ItemViewController: UITableViewDelegate {
             alert.addTextField()
             alert.textFields?.first?.text = self.models[indexPath.row].name
             alert.addAction(UIAlertAction(title: "Submit", style: .cancel, handler: { _ in guard let field = alert.textFields?.first, let text = field.text, !text.isEmpty else { return }
-                DataManager.shared.updateItem(item: self.models[indexPath.row], newName: text)
+                ItemManager.shared.updateItem(item: self.models[indexPath.row], newName: text)
             }))
             
             self.present(alert, animated: true)
             
         }))
-        sheet.addAction(UIAlertAction(title: "Delete", style: .destructive, handler: { _ in DataManager.shared.deleteItem(item: self.models[indexPath.row])
+        sheet.addAction(UIAlertAction(title: "Delete", style: .destructive, handler: { _ in ItemManager.shared.deleteItem(item: self.models[indexPath.row])
         }))
         
         present(sheet, animated: true)
@@ -139,15 +139,13 @@ extension ItemViewController: UITableViewDelegate {
 }
 
 //MARK: - Searchbar delegate methods
-
 extension ItemViewController: UISearchBarDelegate {
-    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+    
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         searchBar.resignFirstResponder()
     }
-    
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        
-        DataManager.shared.fetchItems(with: searchText)
+        ItemManager.shared.fetchItems(with: searchText, section: selectedSection!)
     }
 }
 

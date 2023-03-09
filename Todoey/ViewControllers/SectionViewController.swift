@@ -9,24 +9,26 @@ import UIKit
 
 final class SectionViewController: UIViewController {
     
+    private var sections = [TodoeySection]()
+    
     private lazy var sectionTableView: UITableView = {
         let tableView = UITableView()
-        tableView.register(SectionTableViewCell.self, forCellReuseIdentifier: SectionTableViewCell.IDENTIFIER)
-        tableView.separatorStyle = .none
-        tableView.layer.borderWidth = 2
-        tableView.layer.borderColor = .init(red: 0, green: 0, blue: 0, alpha: 1)
+        tableView.register(TodoeyTableViewCell.self, forCellReuseIdentifier: TodoeyTableViewCell.IDENTIFIER)
+        tableView.separatorStyle = .none 
         return tableView
     }()
 
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        SectionManager.shared.delegate = self
+        SectionManager.shared.fetchSections()
         
         configureNavBar()
+        view.backgroundColor = .systemBlue
         
         sectionTableView.delegate = self
         sectionTableView.dataSource = self
-        view.backgroundColor = .systemBlue
         
         setupViews()
         setupConstraints()
@@ -38,38 +40,46 @@ final class SectionViewController: UIViewController {
 private extension SectionViewController {
     func configureNavBar(){
         navigationItem.title = "Todoey"
-        let add = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addButtonPressed))
+        let add = UIBarButtonItem(barButtonSystemItem: .add, target: self, action:#selector(addButtonPressed))
         navigationItem.rightBarButtonItem = add
         navigationController?.navigationBar.tintColor = .label
         navigationController?.navigationBar.prefersLargeTitles = true
     }
     
     @objc func addButtonPressed() {
-        let alert = UIAlertController(title: "New Section", message: "Create new section", preferredStyle: .alert)
+        let alert = UIAlertController(title: "New Section", message: "Create new section",preferredStyle: .alert)
         alert.addTextField()
-        alert.addAction(UIAlertAction(title: "Submit", style: .cancel, handler: { _ in guard let field = alert.textFields?.first, let text = field.text, !text.isEmpty else { return }
-            
-      //       DataManager.shared.createItem(with: text)
+        alert.addAction(UIAlertAction(title: "Submit", style: .cancel, handler: {_ in
+            guard let field = alert.textFields?.first, let text = field.text,
+                  !text.isEmpty else {return}
+            SectionManager.shared.createSection(with: text)
         }))
-        
         present(alert, animated: true)
     }
 }
+//MARK: - Section manager delegate methods
 
-
+extension SectionViewController: SectionManagerDelegate {
+    func didUpdateSections(with models: [TodoeySection]) {
+        self.sections = models
+        
+        DispatchQueue.main.async {
+            self.sectionTableView.reloadData()
+        }
+    }
+}
 //MARK: - Tableview data source methods
 
 extension SectionViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 10
+        return sections.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: SectionTableViewCell.IDENTIFIER, for: indexPath) as! SectionTableViewCell
+        let cell = tableView.dequeueReusableCell(withIdentifier: TodoeyTableViewCell.IDENTIFIER, for: indexPath) as! TodoeyTableViewCell
         cell.selectionStyle = .none
-        let num = CGFloat.random(in: 120...255)
-        cell.backgroundColor = UIColor(red: num/255, green: num/255, blue: num/255, alpha: 1)
+        cell.configure(with: sections[indexPath.row].name! )
         return cell
     }
 }
@@ -83,9 +93,25 @@ extension SectionViewController: UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-       // let viewController = ItemViewController()
-        // navigationController?.pushViewController(viewController, animated: true)
-        print("Hi")
+        let viewController = ItemViewController()
+        viewController.configure(with: sections[indexPath.row])
+        navigationController?.pushViewController(viewController, animated: true)
+    }
+    
+    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        return UISwipeActionsConfiguration(actions: [UIContextualAction(style: .destructive,title: "Delete", handler: {_, _, _ in SectionManager.shared.deleteSection(section: self.sections[indexPath.row])
+        }),UIContextualAction(style: .normal, title: "Edit", handler: { _, _, _ in
+            let alert = UIAlertController(title: "Update Section", message: "Update your section", preferredStyle: .alert)
+            alert.addTextField()
+            alert.textFields?.first?.text = self.sections[indexPath.row].name
+            alert.addAction(UIAlertAction(title: "Submit", style: .cancel, handler: {_ in
+                guard let field = alert.textFields?.first, let text = field.text,
+                      !text.isEmpty else {return}
+                SectionManager.shared.updateSection(section: self.sections[indexPath.row] , newName: text)
+            }))
+            
+            self.present(alert, animated: true)
+        })])
     }
 }
 
@@ -97,7 +123,7 @@ private extension SectionViewController {
         view.addSubview(sectionTableView)
     }
     
-    func setupConstraints() {
+    func setupConstraints(){
         sectionTableView.snp.makeConstraints { make in
             make.edges.equalTo(view.safeAreaLayoutGuide)
         }

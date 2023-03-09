@@ -7,7 +7,7 @@
 
 import UIKit
 
-final class SectionTableViewCell: UITableViewCell {
+final class TodoeyTableViewCell: UITableViewCell {
     
     static let IDENTIFIER = "SectionTableViewCell"
     
@@ -37,7 +37,7 @@ final class SectionTableViewCell: UITableViewCell {
 
 //MARK: - Setup views and constraints
 
-private extension SectionTableViewCell {
+private extension TodoeyTableViewCell {
     
     func setupViews() {
         contentView.addSubview(nameLabel)
