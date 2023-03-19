@@ -8,89 +8,66 @@
 import Foundation
 import UIKit
 
-protocol SectionManagerDelegate {
-    
-    func didUpdateSections(with models: [TodoeySection])    
+protocol SectionManagerDelegate{
+    func didUpdate(with list: [TodoeySection])
+    func didFail(with error: Error)
 }
 
 struct SectionManager {
+    
     private let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
-    var delegate: SectionManagerDelegate?
-    
+    var delegate : SectionManagerDelegate?
     static var shared = SectionManager()
     
-    func fetchSections() {
-        do {
+    func fetchSections(){
+        do{
             let request = TodoeySection.fetchRequest()
             
             let desc = NSSortDescriptor(key: "name", ascending: true)
             request.sortDescriptors = [desc]
             
             let models = try context.fetch(request)
-            delegate?.didUpdateSections(with: models)
-        } catch {
-            delegate?.didFail(with : error)
+            delegate?.didUpdate(with: models)
+        }catch{
+            print("Error accured: ", error)
         }
     }
     
-    func createSection(with name: String) {
+    func createSection(with name: String, color: String = "white"){
         let newSection = TodoeySection(context: context)
         newSection.name = name
-        do {
+        do{
             try context.save()
-            let request = TodoeySection.fetchRequest()
-            
-            let desc = NSSortDescriptor(key: "name", ascending: true)
-            request.sortDescriptors = [desc]
-                   
-            let models = try context.fetch(request)
-            delegate?.didUpdateSections(with: models)
-            
-        } catch {
-            print("Following error appeared", error )
-            
+            fetchSections()
+        }catch{
+            delegate?.didFail(with: error)
         }
     }
     
-    func deleteSection(section: TodoeySection) {
-        context.delete(section)
-        do {
+    func deleteSection(section: TodoeySection){
+        do{
+            context.delete(section)
             try context.save()
-            let request = TodoeySection.fetchRequest()
-            let desc = NSSortDescriptor(key: "name", ascending: true)
-            request.sortDescriptors = [desc]
-            
-            let models = try context.fetch(TodoeySection.fetchRequest())
-            delegate?.didUpdateSections(with: models)
-            
-        } catch {
-            print ("Following error appeared", error )
-            
-        }
-        
-    }
-    func updateSection(section: TodoeySection, newName: String) {
-        section.name = newName
-        do {
-            try context.save()
-            let request = TodoeySection.fetchRequest()
-            
-            let desc = NSSortDescriptor(key: "name", ascending: true)
-            request.sortDescriptors = [desc]
-
-            let models = try context.fetch(request)
-            delegate?.didUpdateSections(with: models)
-        } catch {
-            print ("Following error appeared", error )
+            fetchSections()
+        }catch{
+            delegate?.didFail(with: error)
         }
     }
     
+    func editSection(section: TodoeySection,with name: String){
+        do{
+            section.name = name
+            try context.save()
+            fetchSections()
+        }catch{
+            print("Error accured: ", error)
+        }
+    }
 }
 
-extension SectionManagerDelegate {
-    func didFail(with error: Error) {
-        print ("Following error appeared", error )
-        
+extension SectionManagerDelegate{
+    func didFail(with error: Error){
+        print("Error accured: ", error)
     }
 }

@@ -22,6 +22,9 @@
 		2E418DE329B9E47A00E0439A /* TodoeySection+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E418DDC29B9E47900E0439A /* TodoeySection+CoreDataProperties.swift */; };
 		2E418DE529B9E5D800E0439A /* ItemViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E418DE429B9E5D800E0439A /* ItemViewController.swift */; };
 		2E418DE729BA075C00E0439A /* SectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E418DE629BA075B00E0439A /* SectionManager.swift */; };
+		2E6FCB8F29C7405900898103 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E6FCB8E29C7405900898103 /* Constants.swift */; };
+		2E6FCB9129C7417800898103 /* CUViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E6FCB9029C7417800898103 /* CUViewController.swift */; };
+		2E6FCB9329C741B700898103 /* FilterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E6FCB9229C741B700898103 /* FilterViewController.swift */; };
 		EFF586B0DFDF1BAD988F79DA /* Pods_Todoey.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 24FB56D9DD0B49031836AFF2 /* Pods_Todoey.framework */; };
 /* End PBXBuildFile section */
 
@@ -46,6 +49,9 @@
 		2E418DDF29B9E47A00E0439A /* TodoeySection+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "TodoeySection+CoreDataClass.swift"; path = "/Users/karnelius/Desktop/IOS_Element/Todoey/Todoey/Modules/TodoeySection+CoreDataClass.swift"; sourceTree = "<absolute>"; };
 		2E418DE429B9E5D800E0439A /* ItemViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItemViewController.swift; sourceTree = "<group>"; };
 		2E418DE629BA075B00E0439A /* SectionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SectionManager.swift; sourceTree = "<group>"; };
+		2E6FCB8E29C7405900898103 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+		2E6FCB9029C7417800898103 /* CUViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CUViewController.swift; sourceTree = "<group>"; };
+		2E6FCB9229C741B700898103 /* FilterViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -88,6 +94,7 @@
 				2E418DB529B8BC0300E0439A /* SceneDelegate.swift */,
 				2E418DB929B8BC0300E0439A /* Main.storyboard */,
 				2E418DBF29B8BC0E00E0439A /* Assets.xcassets */,
+				2E6FCB8E29C7405900898103 /* Constants.swift */,
 				2E418DC129B8BC0E00E0439A /* LaunchScreen.storyboard */,
 				2E418DC429B8BC0E00E0439A /* Info.plist */,
 				2E418DBC29B8BC0300E0439A /* Todoey.xcdatamodeld */,
@@ -100,6 +107,8 @@
 			children = (
 				2E418DD229B8D3C500E0439A /* SectionViewController.swift */,
 				2E418DE429B9E5D800E0439A /* ItemViewController.swift */,
+				2E6FCB9029C7417800898103 /* CUViewController.swift */,
+				2E6FCB9229C741B700898103 /* FilterViewController.swift */,
 			);
 			path = ViewControllers;
 			sourceTree = "<group>";
@@ -258,8 +267,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2E6FCB9329C741B700898103 /* FilterViewController.swift in Sources */,
 				2E418DE129B9E47A00E0439A /* TodoeyItem+CoreDataClass.swift in Sources */,
 				2E418DE529B9E5D800E0439A /* ItemViewController.swift in Sources */,
+				2E6FCB9129C7417800898103 /* CUViewController.swift in Sources */,
 				2E418DE029B9E47A00E0439A /* TodoeyItem+CoreDataProperties.swift in Sources */,
 				2E418DE329B9E47A00E0439A /* TodoeySection+CoreDataProperties.swift in Sources */,
 				2E418DDB29B8F09E00E0439A /* ItemManager.swift in Sources */,
@@ -269,6 +280,7 @@
 				2E418DB629B8BC0300E0439A /* SceneDelegate.swift in Sources */,
 				2E418DD129B8D04600E0439A /* TodoeyTableViewCell.swift in Sources */,
 				2E418DD329B8D3C500E0439A /* SectionViewController.swift in Sources */,
+				2E6FCB8F29C7405900898103 /* Constants.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -11,11 +11,29 @@ final class TodoeyTableViewCell: UITableViewCell {
     
     static let IDENTIFIER = "SectionTableViewCell"
     
+    private lazy var labelView = UIView()
+    
     private lazy var nameLabel:UILabel = {
         let label = UILabel()
         label.text = "Section"
         label.font = UIFont.systemFont(ofSize: 20)
         return label
+        
+    }()
+    
+    private lazy var dateLabel: UILabel = {
+        let myLabel = UILabel()
+        myLabel.text = "Date"
+        myLabel.font = UIFont.systemFont(ofSize: 15)
+        myLabel.textColor = .systemGray3
+        return myLabel
+    }()
+        
+    private lazy var priorityView: UIView = {
+        let view = UIView()
+        view.layer.borderWidth = 1
+        view.layer.borderColor = .init(red: 0, green: 0, blue: 0, alpha: 1)
+        return view
     }()
 
     override init(style: UITableViewCell.CellStyle,reuseIdentifier:String?) {
@@ -29,10 +47,17 @@ final class TodoeyTableViewCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func configure(with name: String) {
-        nameLabel.text = name
+    func configure(with item: TodoeyItem){
+        DispatchQueue.main.async {
+            self.nameLabel.text = item.name
+            self.dateLabel.text = Date.toString(from: item.createdAt!)
+            switch item.priority {
+            case 1: self.priorityView.backgroundColor = .systemRed
+            case 2: self.priorityView.backgroundColor = .systemYellow
+            default: self.priorityView.backgroundColor = .systemGreen
+            }
+        }
     }
-    
 }
 
 //MARK: - Setup views and constraints
@@ -40,13 +65,28 @@ final class TodoeyTableViewCell: UITableViewCell {
 private extension TodoeyTableViewCell {
     
     func setupViews() {
-        contentView.addSubview(nameLabel)
+        contentView.addSubview(labelView)
+        labelView.addSubview(nameLabel)
+        labelView.addSubview(dateLabel)
+        contentView.addSubview(priorityView)
     }
     
     func setupConstraints() {
+        labelView.snp.makeConstraints { make in
+            make.top.leading.bottom.equalToSuperview()
+            make.width.equalToSuperview().multipliedBy(0.75)
+        }
         nameLabel.snp.makeConstraints { make in
-            make.leading.equalToSuperview().offset(20 )
-            make.centerY.equalToSuperview()
+            make.top.leading.trailing.equalToSuperview()
+            make.height.equalToSuperview().multipliedBy(0.5)
+        }
+        dateLabel.snp.makeConstraints { make in
+            make.top.equalTo(nameLabel.snp.bottom)
+            make.leading.bottom.trailing.equalToSuperview()
+        }
+        priorityView.snp.makeConstraints { make in
+            make.top.bottom.trailing.equalToSuperview()
+            make.leading.equalTo(labelView.snp.trailing)
         }
     }
 }

@@ -7,13 +7,10 @@
 
 import Foundation
 import UIKit
-import CoreData
 
 protocol ItemManagerDelegate {
-    
-    func didUpdateItems(with models: [TodoeyItem])
+    func didUpdate(with models: [TodoeyItem])
     func didFail(with error: Error)
-    
 }
 
 struct ItemManager {
@@ -21,81 +18,102 @@ struct ItemManager {
     private let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
     var delegate: ItemManagerDelegate?
-    
     static var shared = ItemManager()
     
-    func fetchItems(with text: String = "", section: TodoeySection) {
+    func fetchItems(with text: String = "", section: TodoeySection, isShowingCompleted: Bool) {
         do {
             let request = TodoeyItem.fetchRequest()
-            if text != "" {
-                let predicate = NSPredicate(format: "name CONTAINS %@", text)
-                let secondPredicate = NSPredicate(format: "section == %@", section)
-                
-                let andPredicate = NSCompoundPredicate(andPredicateWithSubpredicates: [predicate, secondPredicate])
-                request.predicate = andPredicate
-            } else {
-                let secondPredicate = NSPredicate(format: "section == %@", section)
-                request.predicate = secondPredicate
-            }
-            let desc = NSSortDescriptor(key: "name", ascending: true)
-            request.sortDescriptors = [desc]
-            
+            request.predicate = setPredicate(with: text, section: section, isShowingCompleted: isShowingCompleted)
+            request.sortDescriptors = setSortDesc()
             let models = try context.fetch(request)
-                delegate?.didUpdateItems(with: models)
+            delegate?.didUpdate(with: models)
         } catch {
-            delegate?.didFail(with : error)
+            delegate?.didFail(with: error)
         }
     }
     
-    func createItem(with name: String) {
+    func createItem(name: String, desc: String, priority: Int16, section: TodoeySection) {
         let newItem = TodoeyItem(context: context)
         newItem.name = name
+        newItem.desc = desc
+        newItem.priority = priority
         newItem.createdAt = Date()
+        newItem.isCompleted = false
+        section.addToItems(newItem)
         do {
             try context.save()
-            let request = TodoeyItem.fetchRequest()
-            
-            let desc = NSSortDescriptor(key: "name", ascending: true)
-            request.sortDescriptors = [desc]
-            
-            let models = try context.fetch(request)
-            delegate?.didUpdateItems(with: models)
-            
+            fetchItems(section: section, isShowingCompleted: false)
         } catch {
-            print("Following error appeared", error )
-            
+            delegate?.didFail(with: error)
         }
     }
-        func deleteItem(item: TodoeyItem) {
+    
+    func completeItem(item: TodoeyItem) {
+        do {
+            item.isCompleted = true
+            try context.save()
+            fetchItems(section: item.section!, isShowingCompleted: false)
+        } catch {
+            delegate?.didFail(with: error)
+        }
+    }
+    
+    func deleteItem(item: TodoeyItem, section: TodoeySection) {
+        do {
             context.delete(item)
-            do {
-                try context.save()
-                let request = TodoeyItem.fetchRequest()
-                
-                let desc = NSSortDescriptor(key: "name", ascending: true)
-                request.sortDescriptors = [desc]
-                
-                let models = try context.fetch(TodoeyItem.fetchRequest())
-                delegate?.didUpdateItems(with: models)
-                
-            } catch {
-                print ("Following error appeared", error )
-            }
+            try context.save()
+            fetchItems(section: section, isShowingCompleted: false)
+        } catch {
+            delegate?.didFail(with: error)
+        }
+    }
+    
+    func editItem(item: TodoeyItem, name: String, desc: String, priority: Int16) {
+        do {
+            item.name = name
+            item.desc = desc
+            item.priority = priority
+            try context.save()
+            fetchItems(section: item.section!, isShowingCompleted: false)
+        } catch {
+            delegate?.didFail(with: error)
+        }
+    }
+}
+
+private extension ItemManager {
+    
+    func setPredicate(with searchText: String, section: TodoeySection, isShowingCompleted: Bool) -> NSPredicate? {
+        
+        var predicateList: [NSPredicate] = []
+        
+        let sectionPredicate = NSPredicate(format: "section == %@", section)
+        predicateList.append(sectionPredicate)
+        
+        if searchText != "" {
+            let namePredicate = NSPredicate(format: "name CONTAINS[c] %@", searchText)
+            predicateList.append(namePredicate)
         }
         
-    func updateItem(item: TodoeyItem, newName: String) {
-        item.name = newName
-        do {
-            try context.save()
-            let request = TodoeyItem.fetchRequest()
-            
-            let desc = NSSortDescriptor(key: "name", ascending: true)
-            request.sortDescriptors = [desc]
-
-            let models = try context.fetch(request)
-            delegate?.didUpdateItems(with: models)
-        } catch {
-            print ("Following error appeared", error )
+        if !isShowingCompleted {
+            let isCompletedPredicate = NSPredicate(format: "isCompleted == %@", "False")
+            predicateList.append(isCompletedPredicate)
         }
+        
+        let compoundPredicate = NSCompoundPredicate(andPredicateWithSubpredicates: predicateList)
+        return compoundPredicate
+    }
+    
+    func setSortDesc() -> [NSSortDescriptor] {
+        let sortDescPriority = NSSortDescriptor(key: "priority", ascending: true)
+        let sortDescName = NSSortDescriptor(key: "name", ascending: true)
+        return [sortDescPriority, sortDescName]
+    }
+}
+
+extension ItemManagerDelegate {
+    
+    func didFail(with error: Error){
+        print("Error accured: ", error)
     }
 }

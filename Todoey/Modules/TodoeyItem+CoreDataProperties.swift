@@ -19,5 +19,9 @@ extension TodoeyItem {
     @NSManaged public var name: String?
     @NSManaged public var createdAt: Date?
     @NSManaged public var section: TodoeySection?
+    @NSManaged public var priority: Int16
+    @NSManaged public var isCompleted: Bool
+    @NSManaged public var desc: String?
+
 
 }

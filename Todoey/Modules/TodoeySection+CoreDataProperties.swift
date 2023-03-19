@@ -17,6 +17,22 @@ extension TodoeySection {
     }
 
     @NSManaged public var name: String?
-    @NSManaged public var items: TodoeyItem?
+    @NSManaged public var items: NSSet?
+
+}
+// MARK: Generated accessors for items
+extension TodoeySection {
+
+    @objc(addItemsObject:)
+    @NSManaged public func addToItems(_ value: TodoeyItem)
+
+    @objc(removeItemsObject:)
+    @NSManaged public func removeFromItems(_ value: TodoeyItem)
+
+    @objc(addItems:)
+    @NSManaged public func addToItems(_ values: NSSet)
+
+    @objc(removeItems:)
+    @NSManaged public func removeFromItems(_ values: NSSet)
 
 }
